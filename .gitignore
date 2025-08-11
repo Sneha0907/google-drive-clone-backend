@@ -8,6 +8,7 @@ node_modules/
 # Build outputs
 dist/
 build/
+node_modules/
 
 # Logs
 npm-debug.log*
@@ -25,9 +26,6 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
-
-# Firebase service account key
-firebase-service-account.json
 
 # TypeScript
 *.tsbuildinfo
@@ -57,8 +55,6 @@ __snapshots__/
 supabase/.temp/
 supabase/migrations/.snapshots/
 
-# AWS credential files (if stored locally, though .env is preferred)
-.aws/
 
 # Misc
 *.local

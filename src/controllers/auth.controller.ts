@@ -1,38 +1,39 @@
 import bcrypt from 'bcrypt';
+import { Request, Response } from 'express';
 import { supabase } from '../db.js';
 import { generateToken } from '../utils/jwt.js';
-import { Request, Response } from 'express';
 
-const SALT_ROUNDS = 10;
+const SALT = 10;
 
 export async function signup(req: Request, res: Response) {
-  const { email, password } = req.body;
+  const { email, password } = req.body as { email: string; password: string };
 
-  const { data: existingUser } = await supabase
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+
+  const { data: existing } = await supabase
     .from('users')
-    .select('*')
+    .select('id')
     .eq('email', email)
-    .single();
+    .maybeSingle();
 
-  if (existingUser) return res.status(400).json({ error: 'User already exists' });
+  if (existing) return res.status(400).json({ error: 'User already exists' });
 
-  const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+  const hash = await bcrypt.hash(password, SALT);
 
   const { data: user, error } = await supabase
     .from('users')
-    .insert([{ email, password: hashedPassword }])
-    .select()
+    .insert([{ email, password: hash }])
+    .select('id,email,created_at')
     .single();
 
-  if (error) return res.status(500).json({ error });
+  if (error) return res.status(500).json({ error: error.message });
 
   const token = generateToken({ id: user.id, email: user.email });
-
   res.json({ user, token });
 }
 
 export async function login(req: Request, res: Response) {
-  const { email, password } = req.body;
+  const { email, password } = req.body as { email: string; password: string };
 
   const { data: user, error } = await supabase
     .from('users')
@@ -40,13 +41,11 @@ export async function login(req: Request, res: Response) {
     .eq('email', email)
     .single();
 
-  if (error || !user) return res.status(401).json({ error: 'Invalid credentials' });
+  if (error || !user) return res.status(401).json({ error: 'Not found' });
 
-  const match = await bcrypt.compare(password, user.password);
-
-  if (!match) return res.status(401).json({ error: 'Invalid credentials' });
+  const ok = await bcrypt.compare(password, user.password);
+  if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
   const token = generateToken({ id: user.id, email: user.email });
-
-  res.json({ user, token });
+  res.json({ user: { id: user.id, email: user.email }, token });
 }

@@ -1,43 +1,34 @@
-import express, { Request, Response, NextFunction } from 'express';
+// src/index.ts
+import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import uploadRoutes from './routes/upload.routes.js';
 
-try {
-  dotenv.config(); // ✅ Step 1: Load env
+dotenv.config();
 
-  const app = express();
-  const PORT = process.env.PORT || 5000;
+const app = express();
+const PORT = process.env.PORT || 5000;
 
-  app.use(cors());
-  app.use(express.json());
-  app.use('/api/files', uploadRoutes);
+app.use(cors());
+app.use(express.json());
 
-  // ✅ Step 2: Try importing routes INSIDE try-catch
-  const authRoutes = await import('./routes/auth.routes.js');
-  app.use('/api/auth', authRoutes.default); // ESM default export
+// Routes
+import authRoutes from './routes/auth.routes.js';
+import filesRoutes from './routes/files.routes.js';
+import foldersRoutes from './routes/folders.routes.js';
 
-  // ✅ Step 3: Catch-all error handler
-  app.use(
-    (err: Error, _req: Request, res: Response, _next: NextFunction) => {
-      console.error('🔥 Unhandled Error:', err);
-      res.status(500).json({
-        error: 'Internal server error',
-        message: err.message,
-        stack: err.stack,
-      });
-    }
-  );
+app.use('/api/auth', authRoutes);
+app.use('/api/files', filesRoutes);
+app.use('/api/folders', foldersRoutes);
 
-  app.get('/', (_req, res) => {
-    res.send('✅ Keep It Safe API is running');
-    });
+// Health check
+app.get('/', (_req, res) => res.send('✅ Google Drive Clone API is running'));
 
+// Error handler
+app.use((err: any, _req: any, res: any, _next: any) => {
+  console.error('🔥 Unhandled Error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
-  app.listen(PORT, () => {
-    console.log(`🚀 Server running on http://localhost:${PORT}`);
-  });
-} catch (err) {
-  console.error('🛑 Fatal Startup Error:', err);
-  process.exit(1); // Stop the server
-}
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
+});

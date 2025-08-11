@@ -6,7 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node dist/index.js",
-    "dev": "nodemon --exec node --trace-warnings --loader ts-node/esm src/index.ts"
+    "dev": "nodemon --watch src --loader ts-node/esm src/index.ts"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,7 @@
   "homepage": "https://github.com/Sneha0907/google-drive-clone-backend#readme",
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
+    "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
@@ -31,14 +32,17 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.53.1",
+    "@supabase/supabase-js": "^2.54.0",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "firebase-admin": "^13.4.0",
     "jsonwebtoken": "^9.0.2",
+    "mime-types": "^3.0.1",
     "multer": "^2.0.2",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "uuid": "^11.1.0"
   }
 }
