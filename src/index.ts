@@ -15,10 +15,14 @@ app.use(express.json());
 import authRoutes from './routes/auth.routes.js';
 import filesRoutes from './routes/files.routes.js';
 import foldersRoutes from './routes/folders.routes.js';
+import sharesRoutes from './routes/shares.routes.js';
+import searchRoutes from './routes/search.routes.js';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/files', filesRoutes);
 app.use('/api/folders', foldersRoutes);
+app.use('/api/shares', sharesRoutes);
+app.use('/api/search', searchRoutes);
 
 // Health check
 app.get('/', (_req, res) => res.send('✅ Google Drive Clone API is running'));
