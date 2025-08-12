@@ -54,7 +54,7 @@ app.post("/api/auth/login", async (req, res) => {
 });
 
 // --- Create folder
-app.post("/api/folders", requireAuth, async (req, res) => {
+app.post("/folders", requireAuth, async (req, res) => {
   const { name, parent_id } = req.body;
   if (!name) return res.status(400).json({ error: "Missing folder name" });
 
