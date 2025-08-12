@@ -5,12 +5,26 @@ import multer from "multer";
 import { supabaseAdmin } from "./supabase_client.js";
 import { v4 as uuidv4 } from "uuid";
 
+// --- App & Middleware
 const upload = multer({ storage: multer.memoryStorage() });
 const app = express();
-app.use(cors());
+
+// --- CORS: add your deployed frontend here
+const allowedOrigins = [
+  "https://google-drive-clone-frontend.vercel.app", // TODO: replace with your real Vercel URL
+  "http://localhost:3000" // local dev
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    credentials: true
+  })
+);
+
 app.use(express.json());
 
-// --- Middleware: require auth
+// --- Auth middleware
 async function requireAuth(req, res, next) {
   const auth = req.headers.authorization;
   if (!auth) return res.status(401).json({ error: "Missing authorization header" });
@@ -31,7 +45,7 @@ async function requireAuth(req, res, next) {
 }
 
 // --- Health
-app.get("/", (req, res) => res.json({ ok: true }));
+app.get("/", (req, res) => res.json({ ok: true, message: "Google Drive Clone backend is running 🚀" }));
 
 // --- Signup
 app.post("/api/auth/signup", async (req, res) => {
@@ -79,7 +93,8 @@ app.patch("/folders/:id", requireAuth, async (req, res) => {
   const { data, error } = await supabaseAdmin.from("folders")
     .update({ name, updated_at: new Date() })
     .eq("id", id)
-    .select().single();
+    .select()
+    .single();
 
   if (error) return res.status(500).json({ error: error.message });
   res.json({ folder: data });
@@ -89,10 +104,12 @@ app.patch("/folders/:id", requireAuth, async (req, res) => {
 app.patch("/folders/:id/move", requireAuth, async (req, res) => {
   const id = req.params.id;
   const { parent_id } = req.body;
-  const { data, error } = await supabaseAdmin.from("folders")
+  const { data, error } = await supabaseAdmin
+    .from("folders")
     .update({ parent_id: parent_id || null, updated_at: new Date() })
     .eq("id", id)
-    .select().single();
+    .select()
+    .single();
   if (error) return res.status(500).json({ error: error.message });
   res.json({ folder: data });
 });
@@ -104,10 +121,12 @@ app.delete("/folders/:id", requireAuth, async (req, res) => {
   if (fErr || !folder) return res.status(404).json({ error: "Folder not found" });
   if (folder.owner !== req.user.id) return res.status(403).json({ error: "Forbidden" });
 
-  const { data, error } = await supabaseAdmin.from("folders")
+  const { data, error } = await supabaseAdmin
+    .from("folders")
     .update({ is_deleted: true, deleted_at: new Date(), updated_at: new Date() })
     .eq("id", id)
-    .select().single();
+    .select()
+    .single();
   if (error) return res.status(500).json({ error: error.message });
 
   await supabaseAdmin.from("files").update({ is_deleted: true, deleted_at: new Date() }).eq("folder_id", id);
@@ -164,10 +183,12 @@ app.patch("/files/:id", requireAuth, async (req, res) => {
   if (fErr || !file) return res.status(404).json({ error: "File not found" });
   if (file.owner !== req.user.id) return res.status(403).json({ error: "Forbidden" });
 
-  const { data, error } = await supabaseAdmin.from("files")
+  const { data, error } = await supabaseAdmin
+    .from("files")
     .update({ name, updated_at: new Date() })
     .eq("id", id)
-    .select().single();
+    .select()
+    .single();
 
   if (error) return res.status(500).json({ error: error.message });
   res.json({ file: data });
@@ -177,10 +198,12 @@ app.patch("/files/:id", requireAuth, async (req, res) => {
 app.patch("/files/:id/move", requireAuth, async (req, res) => {
   const id = req.params.id;
   const { folder_id } = req.body;
-  const { data, error } = await supabaseAdmin.from("files")
+  const { data, error } = await supabaseAdmin
+    .from("files")
     .update({ folder_id: folder_id || null, updated_at: new Date() })
     .eq("id", id)
-    .select().single();
+    .select()
+    .single();
 
   if (error) return res.status(500).json({ error: error.message });
   res.json({ file: data });
@@ -193,10 +216,12 @@ app.delete("/files/:id", requireAuth, async (req, res) => {
   if (fErr || !file) return res.status(404).json({ error: "File not found" });
   if (file.owner !== req.user.id) return res.status(403).json({ error: "Forbidden" });
 
-  const { data, error } = await supabaseAdmin.from("files")
+  const { data, error } = await supabaseAdmin
+    .from("files")
     .update({ is_deleted: true, deleted_at: new Date(), updated_at: new Date() })
     .eq("id", id)
-    .select().single();
+    .select()
+    .single();
 
   if (error) return res.status(500).json({ error: error.message });
   res.json({ file: data });
@@ -218,10 +243,12 @@ app.post("/restore/file/:id", requireAuth, async (req, res) => {
   if (fErr || !file) return res.status(404).json({ error: "File not found" });
   if (file.owner !== req.user.id) return res.status(403).json({ error: "Forbidden" });
 
-  const { data, error } = await supabaseAdmin.from("files")
+  const { data, error } = await supabaseAdmin
+    .from("files")
     .update({ is_deleted: false, deleted_at: null, updated_at: new Date() })
     .eq("id", id)
-    .select().single();
+    .select()
+    .single();
   if (error) return res.status(500).json({ error: error.message });
   res.json({ file: data });
 });
@@ -233,10 +260,12 @@ app.post("/restore/folder/:id", requireAuth, async (req, res) => {
   if (fErr || !folder) return res.status(404).json({ error: "Folder not found" });
   if (folder.owner !== req.user.id) return res.status(403).json({ error: "Forbidden" });
 
-  const { data, error } = await supabaseAdmin.from("folders")
+  const { data, error } = await supabaseAdmin
+    .from("folders")
     .update({ is_deleted: false, deleted_at: null, updated_at: new Date() })
     .eq("id", id)
-    .select().single();
+    .select()
+    .single();
   if (error) return res.status(500).json({ error: error.message });
 
   await supabaseAdmin.from("files").update({ is_deleted: false, deleted_at: null }).eq("folder_id", id);
@@ -279,6 +308,7 @@ app.delete("/folders/:id/hard", requireAuth, async (req, res) => {
     }
   }
   await supabaseAdmin.from("files").delete().eq("folder_id", id);
+
   const { error } = await supabaseAdmin.from("folders").delete().eq("id", id);
   if (error) return res.status(500).json({ error: error.message });
 
@@ -302,7 +332,8 @@ app.get("/folders/:id/files", requireAuth, async (req, res) => {
   const id = req.params.id === "root" ? null : req.params.id;
   const includeDeleted = req.query.includeDeleted === "true";
   let q = supabaseAdmin.from("files").select("*").eq("owner", req.user.id).order("created_at", { ascending: false });
-  if (id) q = q.eq("folder_id", id); else q = q.is("folder_id", null);
+  if (id) q = q.eq("folder_id", id);
+  else q = q.is("folder_id", null);
   if (!includeDeleted) q = q.eq("is_deleted", false);
 
   const { data, error } = await q;
@@ -315,7 +346,8 @@ app.get("/folders", requireAuth, async (req, res) => {
   const parent_id = req.query.parent_id || null;
   const includeDeleted = req.query.includeDeleted === "true";
   let q = supabaseAdmin.from("folders").select("*").eq("owner", req.user.id).order("created_at", { ascending: false });
-  if (parent_id) q = q.eq("parent_id", parent_id); else q = q.is("parent_id", null);
+  if (parent_id) q = q.eq("parent_id", parent_id);
+  else q = q.is("parent_id", null);
   if (!includeDeleted) q = q.eq("is_deleted", false);
 
   const { data, error } = await q;
@@ -323,5 +355,8 @@ app.get("/folders", requireAuth, async (req, res) => {
   res.json({ folders: data });
 });
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, () => console.log(`Server running on :${PORT}`));
+// --- Start server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Google Drive Clone backend is running on :${PORT}`);
+});
