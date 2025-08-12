@@ -12,7 +12,7 @@ const app = express();
 // --- CORS: add your deployed frontend here
 const allowedOrigins = [
   "https://google-drive-clone-frontend.vercel.app", // TODO: replace with your real Vercel URL
-  "http://localhost:3000" // local dev
+  "http://localhost:4000" // local dev
 ];
 
 app.use(
@@ -356,7 +356,7 @@ app.get("/folders", requireAuth, async (req, res) => {
 });
 
 // --- Start server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Google Drive Clone backend is running on :${PORT}`);
 });
