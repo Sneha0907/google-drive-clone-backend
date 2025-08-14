@@ -12,7 +12,7 @@ const app = express();
 // --- CORS: add your deployed frontend here
 const allowedOrigins = [
   "https://google-drive-clone-frontend.vercel.app", // TODO: replace with your real Vercel URL
-  "http://localhost:4000" // local dev
+  "http://localhost:5173", // local dev
 ];
 
 app.use(
