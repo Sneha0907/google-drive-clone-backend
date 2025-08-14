@@ -10,6 +10,6 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 export const supabaseAdmin = createClient(
   SUPABASE_URL,
-  SUPABASE_SERVICE_ROLE_KEY,   // <-- service role key (NOT anon)
+  SUPABASE_SERVICE_ROLE_KEY,
   { auth: { persistSession: false } }
 );
