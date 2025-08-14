@@ -67,6 +67,27 @@ app.post("/api/auth/login", async (req, res) => {
   res.json({ session: data.session });
 });
 
+// --- Forgot password (Supabase email)
+app.post("/api/auth/forgot", async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: "Email is required" });
+
+  // Where Supabase should send the user AFTER clicking the email link
+  const redirectTo = (process.env.FRONTEND_URL || "http://localhost:5173") + "/reset";
+
+  try {
+    const { data, error } = await supabaseAdmin.auth.resetPasswordForEmail(email, { redirectTo });
+    if (error) return res.status(400).json({ error: error.message });
+
+    // Always respond the same (don’t reveal if the email exists)
+    return res.json({ message: "If the email exists, a reset link has been sent." });
+  } catch (e) {
+    console.error("forgot error:", e);
+    return res.status(500).json({ error: "Failed to start password reset" });
+  }
+});
+
+
 // --- Create folder
 app.post("/folders", requireAuth, async (req, res) => {
   const { name, parent_id } = req.body;
